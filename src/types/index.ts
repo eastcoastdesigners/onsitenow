@@ -1,3 +1,28 @@
+export type TaskCategory = 'Framing' | 'Demo' | 'Tile' | 'Flooring' | 'Plumbing' | 'Electrical' | 'Drywall' | 'Paint' | 'Trim' | 'Roofing' | 'Concrete'
+
+export interface LibraryTask {
+  id: string
+  category: TaskCategory
+  name: string
+  description: string
+  estimatedMinutes: number
+  videoId: string        // YouTube video ID for embed
+  searchQuery: string    // fallback search string
+  toolsNeeded: string[]
+  safetyNotes: string
+}
+
+export interface VideoWatchLog {
+  id: string
+  taskId: string
+  taskTitle: string
+  workerId: string
+  workerName: string
+  videoId: string
+  watchedAt: string
+  durationSeconds: number
+}
+
 export type UserRole = 'boss' | 'worker'
 export type Language = 'en' | 'es' | 'pt' | 'ht' | 'pl'
 export type BossPlan = 'starter' | 'growth' | 'enterprise'
@@ -84,6 +109,10 @@ export interface Task {
   completedAt?: string
   dueDate?: string
   notes?: string
+  libraryTaskId?: string
+  tutorialVideoId?: string
+  toolsNeeded?: string[]
+  safetyNotes?: string
 }
 
 export interface TimeEntry {

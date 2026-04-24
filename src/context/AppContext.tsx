@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import type {
-  User, JobSite, Task, TimeEntry, CheckIn, ChangeOrder, WorkerProfile, Alert
+  User, JobSite, Task, TimeEntry, CheckIn, ChangeOrder, WorkerProfile, Alert, VideoWatchLog
 } from '../types'
 import { storage, generateId } from '../utils/storage'
 import {
@@ -29,6 +29,9 @@ interface AppContextType {
   updateWorkerProfile: (profile: WorkerProfile) => void
   addWorker: (user: User, profile: WorkerProfile) => void
   markAlertRead: (id: string) => void
+  videoWatchLogs: VideoWatchLog[]
+  addVideoWatchLog: (log: Omit<VideoWatchLog, 'id'>) => void
+  getTaskWatchLogs: (taskId: string) => VideoWatchLog[]
   getWorkerById: (id: string) => User | undefined
   getJobSiteById: (id: string) => JobSite | undefined
   getTaskById: (id: string) => Task | undefined
@@ -50,6 +53,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [changeOrders, setChangeOrders] = useState<ChangeOrder[]>(() => loadOrInit('changeOrders', MOCK_CHANGE_ORDERS))
   const [workerProfiles, setWorkerProfiles] = useState<WorkerProfile[]>(() => loadOrInit('workerProfiles', MOCK_WORKER_PROFILES))
   const [alerts, setAlerts] = useState<Alert[]>(() => loadOrInit('alerts', MOCK_ALERTS))
+  const [videoWatchLogs, setVideoWatchLogs] = useState<VideoWatchLog[]>(() => loadOrInit('videoWatchLogs', []))
 
   useEffect(() => { storage.set('jobSites', jobSites) }, [jobSites])
   useEffect(() => { storage.set('tasks', tasks) }, [tasks])
@@ -59,6 +63,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => { storage.set('workerProfiles', workerProfiles) }, [workerProfiles])
   useEffect(() => { storage.set('alerts', alerts) }, [alerts])
   useEffect(() => { storage.set('users', users) }, [users])
+  useEffect(() => { storage.set('videoWatchLogs', videoWatchLogs) }, [videoWatchLogs])
 
   const addJobSite = (site: Omit<JobSite, 'id' | 'createdAt'>) => {
     const newSite: JobSite = { ...site, id: generateId('site'), createdAt: new Date().toISOString() }
@@ -108,6 +113,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const markAlertRead = (id: string) =>
     setAlerts(prev => prev.map(a => (a.id === id ? { ...a, read: true } : a)))
 
+  const addVideoWatchLog = (log: Omit<VideoWatchLog, 'id'>) => {
+    const newLog: VideoWatchLog = { ...log, id: generateId('watch') }
+    setVideoWatchLogs(prev => [...prev, newLog])
+  }
+
+  const getTaskWatchLogs = (taskId: string) =>
+    videoWatchLogs.filter(l => l.taskId === taskId)
+
   const getWorkerById = (id: string) => users.find(u => u.id === id)
   const getJobSiteById = (id: string) => jobSites.find(s => s.id === id)
   const getTaskById = (id: string) => tasks.find(t => t.id === id)
@@ -119,7 +132,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       users, jobSites, tasks, timeEntries, checkIns, changeOrders, workerProfiles, alerts,
       addJobSite, updateJobSite, addTask, updateTask, addTimeEntry, updateTimeEntry,
       addCheckIn, addChangeOrder, updateChangeOrder, updateWorkerProfile, addWorker,
-      markAlertRead, getWorkerById, getJobSiteById, getTaskById, getActiveTimeEntry,
+      markAlertRead, videoWatchLogs, addVideoWatchLog, getTaskWatchLogs,
+      getWorkerById, getJobSiteById, getTaskById, getActiveTimeEntry,
     }}>
       {children}
     </AppContext.Provider>
